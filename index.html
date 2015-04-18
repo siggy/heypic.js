@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+
+    <script type="text/javascript"
+      src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js'>
+    </script>
+
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?v=3&sensor=false">
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script type="text/javascript">
+
+      function initialize() {
+        var latlng = new google.maps.LatLng(30, 0);
+        var myOptions = {
+          zoom: 2,
+          center: latlng,
+          mapTypeId: google.maps.MapTypeId.TERRAIN
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+      }
+
+      var socket = io.connect('http://heypic.me:8124');
+      // var socket = io.connect('http://0.0.0.0:8124');
+      socket.on('connect', function () {
+        socket.on('message', function (msg) {
+          processMarker(JSON.parse(msg));
+        });
+      });
+
+      var shadow = new google.maps.MarkerImage(
+        "http://heypic.me/images/icon_shadow.png",
+        new google.maps.Size(32, 32),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(0, 0)
+      );
+
+      function processMarker(json) {
+        var icon = new google.maps.MarkerImage(
+          json.hpm_thumb_url,
+          new google.maps.Size(24, 24),
+          new google.maps.Point(0, 0),
+          new google.maps.Point(0, 0),
+          new google.maps.Size(24, 24)
+        );
+
+        var marker = new google.maps.Marker({
+          map: map,
+          position: new google.maps.LatLng(json.hpm_lat, json.hpm_lon),
+          icon: icon,
+          shadow: shadow
+        });
+
+        var infowindow = new google.maps.InfoWindow({
+          content: '<a target="_blank" href=\"' + json.hpm_url + '\"><img src=\"' + json.hpm_thumb_url + '\" alt="original image" title="original image"></a>'
+        });
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.open(map, marker);
+        });
+      }
+    </script>
+
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>

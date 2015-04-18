@@ -1,0 +1,4 @@
+check process heypic_streamer matching "heypic_streamer"
+  start program = "/usr/local/bin/node /usr/local/heypic/current/heypic_streamer.js" as uid deploy and gid deploy
+  stop program  = "/usr/bin/pkill -f 'node /usr/local/heypic/current/heypic_streamer.js'"
+  if 5 restarts within 5 cycles then timeout
